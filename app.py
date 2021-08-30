@@ -10,8 +10,13 @@ def index():  # put application's code here
 
 @app.route('/search', methods = ['POST'])
 def seach():
-    if request.form['xh'] == '1701070235':
-        return 'test success'
+    pass
+
+
+@app.route('/registered', methods = ['POST', 'GET'])
+def registerde():
+    if request.method == 'GET':
+        return render_template('registered.html')
 
 
 if __name__ == '__main__':
