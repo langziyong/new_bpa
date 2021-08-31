@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>众志成城 齐心抗疫</title>
+</head>
+<body>
+    <h1>用户界面</h1>
+    <form action = "./update" method = "post">
+        <p><label>
+            学号:<input type="text" name="xh" value="{{ xh }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            姓名:<input type="text" name="xm" value="{{ xh }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            密码:<input type="text" name="mm" value="{{ mm }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            系别:<input type="text" name="xy" value="{{ xy }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            手机号码:<input type="text" name="sjhm" value="{{ sjhm }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            三级地址:<input type="text" name="dz1" value="{{ dz1 }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            县区地址:<input type="text" name="dz2" value="{{ dz2 }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            详细地址:<input type="text" name="xxdz" value="{{ xxdz }} {{ disabled }}"/>
+        </label></p>
+        <p><label>
+            体温参数1:<input type="radio" name="tw1" value="1" {{ checked1_1 }} {{ disabled }}/>小于37°C
+                     <input type="radio" name="tw1" value="2" {{ checked1_2 }} {{ disabled }}/>37°C至37°C
+                     <input type="radio" name="tw1" value="3" {{ checked1_3 }} {{ disabled }}/>大于37°C
+        </label></p>
+        <p><label>
+            体温参数1:<input type="radio" name="tw2" value="1" {{ checked2_1 }} {{ disabled }}/>小于37°C
+                     <input type="radio" name="tw2" value="2" {{ checked2_2 }} {{ disabled }}/>37°C至37°C
+                     <input type="radio" name="tw2" value="3" {{ checked2_3 }} {{ disabled }}/>大于37°C
+        </label></p>
+        <p><label>
+            电子邮箱:<input type="text" name="email" value="{{ email }} {{ disabled }}"/>
+        </label></p>
+        <p><input type = "submit" value = "更新" /></p>
+    </form>
+</body>
+</html>

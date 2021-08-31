@@ -10,13 +10,14 @@ def index():  # put application's code here
 
 
 @app.route('/search', methods = ['POST'])
-def seach():
+def search():
     xh = request.form.get('xh')
     reply_data = flask_mysql.getUser(xh)
     if reply_data or reply_data == ():
         if len(reply_data) == 0:
             return render_template('index.html',
-                                   cxjg = '<a href = "./registered">用户不存在，点击此链接进行注册。</a>')
+                                   cxjg = '<a href = "./registered">用户不存在，点击此链接进行注册。</a>',
+                                   )
         else:
             return render_template('index.html',
                                    cxjg = '<a>学号%s已找到，共%s条记录！点击此链接进行管理。</a>' % (reply_data[0][1], len(reply_data)))
