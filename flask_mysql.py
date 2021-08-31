@@ -17,12 +17,12 @@ def addUser(newuserdata):
           (id_number, newuserdata['xh'], newuserdata['xm'], newuserdata['mm'],
            newuserdata['xy'], newuserdata['sjhm'], newuserdata['dz1'], newuserdata['dz2'],
            newuserdata['xxdz'], newuserdata['tw1'], newuserdata['tw2'], newuserdata['email'])
-
     try:
         cursor.execute(sql)
         db.commit()
         db.close()
-        return True
+        reply_data = 'Success!ID:%s' % id_number
+        return reply_data
     except:
         db.rollback()
         db.close()
@@ -39,9 +39,14 @@ def getUser(xh):
     cursor = db.cursor()
     sql = '''
     SELECT * From user_data WHERE xh = '%s';''' % xh
-    cursor.execute(sql)
-    print(sql)
-    data = cursor.fetchall()
-    db.close()
-    print(data)
-    return data
+    try:
+        cursor.execute(sql)
+        reply_data = cursor.fetchall()
+        db.close()
+        print(reply_data)
+        print(type(reply_data))
+        return reply_data
+    except:
+        db.rollback()
+        db.close()
+        return False
