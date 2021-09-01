@@ -9,7 +9,7 @@
     <p>您的唯一ID同时也是您的注册位次为：{{ id }}</p>
     <form action = "./updateuserdata" method = "post">
         <p><label>
-            学号:<input type="text" name="xh" value="{{ xh }}" disabled/>
+            学号:<input type="text" name="xh" value="{{ xh }}" {{ disabled }}/>
         </label></p>
         <p><label>
             密码:<input type="text" name="xm" value="{{ mm }}" {{ disabled }}/>

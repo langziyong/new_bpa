@@ -10,7 +10,8 @@ def addUser(updateuserdata):
         user = 'root',
         password = "lzy0812..",
         database = 'bpa_user_data',
-        port = 3306)
+        port = 3306,
+        charset = 'utf8')
     cursor = db.cursor()
     sql = '''INSERT INTO user_data(xh, mm, xm, xy, sjhm, dz1, dz2, xxdz, tw1, tw2, email) 
              VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');
@@ -37,7 +38,9 @@ def getUser(xh):
         user = 'root',
         password = "lzy0812..",
         database = 'bpa_user_data',
-        port = 3306)
+        charset = 'utf8',
+        port = 3306
+    )
     cursor = db.cursor()
     sql = '''
     SELECT * From user_data WHERE xh = '%s';''' % xh
@@ -58,9 +61,11 @@ def updateUser(updateuserdata):
         user = 'root',
         password = "lzy0812..",
         database = 'bpa_user_data',
-        port = 3306)
+        port = 3306,
+        charset = 'utf8')
     cursor = db.cursor()
     cursor.execute('select count(1) from user_data')
+    print(updateuserdata)
     id_number = cursor.fetchall()[0][0] + 1
     sql = '''UPDATE  user_data
              SET mm = '%s', xm = '%s', xy = '%s', sjhm = '%s', dz1 = '%s',dz2 = '%s', xxdz = '%s', tw1 = '%s', tw2 = '%s', email = '%s'
@@ -70,6 +75,7 @@ def updateUser(updateuserdata):
            updateuserdata['sjhm'], updateuserdata['dz1'], updateuserdata['dz2'],
            updateuserdata['xxdz'], updateuserdata['tw1'], updateuserdata['tw2'],
            updateuserdata['email'], updateuserdata['xh'])
+    print(sql)
     try:
         cursor.execute(sql)
         db.commit()

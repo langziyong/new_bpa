@@ -64,7 +64,7 @@ def updateUserdata():
                        userdata[5], userdata[6], userdata[7], userdata[8], userdata[9],
                        userdata[10], userdata[11]))
     elif request.method == 'POST':
-        req_data = request.form
+        req_data = request.form.to_dict()
         reply_data = flask_mysql.updateUser(req_data)
         if reply_data:
             return '更新成功!\n返回值->' + str(reply_data)
@@ -75,16 +75,24 @@ def updateUserdata():
 @app.route('/test_bpa', methods = ['GET', 'POST'])
 def test_bpa():
     if request.method == 'GET':
-        return redirect('/')
-    elif request.method == 'POST':
-        all_user_data = (request.form,)
+        xh = request.args.get('xh')
+        all_user_data = flask_mysql.getUser(xh)
+        print(all_user_data)
         try:
             auto = auto_bpa.MainControl(all_user_data)
+            del auto
             reply_data = '执行成功'
         except:
             reply_data = '执行失败'
-
-        del auto
+        return reply_data
+    elif request.method == 'POST':
+        all_user_data = (request.form.to_dict(),)
+        try:
+            auto = auto_bpa.MainControl(all_user_data)
+            reply_data = '执行成功'
+            del auto
+        except:
+            reply_data = '执行失败'
         return reply_data
 
 if __name__ == '__main__':
