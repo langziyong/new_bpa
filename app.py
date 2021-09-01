@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import flask_mysql
+import auto_bpa
 
 app = Flask(__name__)
 
@@ -43,7 +44,7 @@ def userPage():
     if request.method == 'GET':
         userdata = flask_mysql.getUser(request.args.get('xh'))[0]
         return eval("render_template('user.html',id = '%s',disabled = 'disabled',"
-                    "xh = '%s',xm = '%s',mm = '%s',xy = '%s',sjhm = '%s',dz1 = '%s',"
+                    "xh = '%s',mm = '%s',xm = '%s',xy = '%s',sjhm = '%s',dz1 = '%s',"
                     "dz2 = '%s',xxdz = '%s',checked1_%s = 'checked',checked2_%s = 'checked',"
                     "email = '%s')"
                     % (userdata[0], userdata[1], userdata[2], userdata[3], userdata[4],
@@ -56,7 +57,7 @@ def updateUserdata():
     if request.method == 'GET':
         userdata = flask_mysql.getUser(request.args.get('xh'))[0]
         return eval("render_template('updateuserdata.html',id = '%s',"
-                    "xh = '%s',xm = '%s',mm = '%s',xy = '%s',sjhm = '%s',dz1 = '%s',"
+                    "xh = '%s',mm = '%s',xm = '%s',xy = '%s',sjhm = '%s',dz1 = '%s',"
                     "dz2 = '%s',xxdz = '%s',checked1_%s = 'checked',checked2_%s = 'checked',"
                     "email = '%s')"
                     % (userdata[0], userdata[1], userdata[2], userdata[3], userdata[4],
@@ -66,10 +67,25 @@ def updateUserdata():
         req_data = request.form
         reply_data = flask_mysql.updateUser(req_data)
         if reply_data:
-            return '返回值->'+str(reply_data)
+            return '更新成功!\n返回值->' + str(reply_data)
         elif not reply_data:
             return '数据库错误导致操作失败!'
 
+
+@app.route('/test_bpa', methods = ['GET', 'POST'])
+def test_bpa():
+    if request.method == 'GET':
+        return redirect('/')
+    elif request.method == 'POST':
+        all_user_data = (request.form,)
+        try:
+            auto = auto_bpa.MainControl(all_user_data)
+            reply_data = '执行成功'
+        except:
+            reply_data = '执行失败'
+
+        del auto
+        return reply_data
 
 if __name__ == '__main__':
     app.run()

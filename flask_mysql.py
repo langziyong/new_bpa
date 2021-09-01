@@ -12,10 +12,10 @@ def addUser(updateuserdata):
         database = 'bpa_user_data',
         port = 3306)
     cursor = db.cursor()
-    sql = '''INSERT INTO user_data(xh, xm, mm, xy, sjhm, dz1, dz2, xxdz, tw1, tw2, email) 
+    sql = '''INSERT INTO user_data(xh, mm, xm, xy, sjhm, dz1, dz2, xxdz, tw1, tw2, email) 
              VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');
              ''' % \
-          (updateuserdata['xh'], updateuserdata['xm'], updateuserdata['mm'],
+          (updateuserdata['xh'], updateuserdata['mm'], updateuserdata['xm'],
            updateuserdata['xy'], updateuserdata['sjhm'], updateuserdata['dz1'], updateuserdata['dz2'],
            updateuserdata['xxdz'], updateuserdata['tw1'], updateuserdata['tw2'], updateuserdata['email'])
     try:
@@ -63,10 +63,10 @@ def updateUser(updateuserdata):
     cursor.execute('select count(1) from user_data')
     id_number = cursor.fetchall()[0][0] + 1
     sql = '''UPDATE  user_data
-             SET xm = '%s', mm = '%s', xy = '%s', sjhm = '%s', dz1 = '%s',dz2 = '%s', xxdz = '%s', tw1 = '%s', tw2 = '%s', email = '%s'
+             SET mm = '%s', xm = '%s', xy = '%s', sjhm = '%s', dz1 = '%s',dz2 = '%s', xxdz = '%s', tw1 = '%s', tw2 = '%s', email = '%s'
              WHERE xh = '%s';
              ''' % \
-          (updateuserdata['xm'], updateuserdata['mm'], updateuserdata['xy'],
+          (updateuserdata['mm'], updateuserdata['xm'], updateuserdata['xy'],
            updateuserdata['sjhm'], updateuserdata['dz1'], updateuserdata['dz2'],
            updateuserdata['xxdz'], updateuserdata['tw1'], updateuserdata['tw2'],
            updateuserdata['email'], updateuserdata['xh'])
