@@ -5,9 +5,9 @@
     <title>众志成城 齐心抗疫</title>
 </head>
 <body>
-    <h1>用户界面</h1>
+    <h1 style="color: red">您已经进入修改状态</h1>
     <p>您的唯一ID同时也是您的注册位次为：{{ id }}</p>
-    <form action = "./update" method = "post">
+    <form action = "./updateuserdata" method = "post">
         <p><label>
             学号:<input type="text" name="xh" value="{{ xh }}" {{ disabled }}/>
         </label></p>
@@ -45,8 +45,8 @@
         <p><label>
             电子邮箱:<input type="text" name="email" value="{{ email }}" {{ disabled }}/>
         </label></p>
-        <p><b>警告：</b>如非必要！比如密码修改，信息失效，或者其他自动化失效情况下，请勿随意更改信息。</p>
-        <p><a href="./updateuserdata?xh={{ xh }}"><input type = "button" value = "我确实需要更新！" style="color: red"/></a></p>
+        <p style="color: red"><b>警告：</b>请严格检查信息正确填写并及时保存！</p>
+        <p><input type = "submit" value = "确认修改并提交更新" style="color: red"/></p>
     </form>
 </body>
 </html>

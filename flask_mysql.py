@@ -73,7 +73,7 @@ def updateUser(updateuserdata):
     try:
         cursor.execute(sql)
         db.commit()
-        reply_data = 'Success!'
+        reply_data = 'Update Success!'
     except:
         db.rollback()
         reply_data = False
