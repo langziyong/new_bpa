@@ -22,7 +22,7 @@ def search():
             return render_template('index.html',
                                    cxjg = '<a href = "./user?xh=%s">学号%s已找到,点击此链接进行管理。</a>' % (reply_data[0][1], reply_data[0][1]))
     elif not reply_data:
-        return '数据库错误导致动作失败!'
+        return '数据库错误导致操作失败!'
 
 
 @app.route('/registered', methods = ['POST', 'GET'])
@@ -35,7 +35,7 @@ def registerdePage():
         if reply_data:
             return str(reply_data)
         elif not reply_data:
-            return '数据库错误导致动作失败!'
+            return '数据库错误导致操作失败!'
 
 
 @app.route('/user', methods = ['GET', 'POST'])
@@ -66,9 +66,9 @@ def updateUserdata():
         req_data = request.form
         reply_data = flask_mysql.updateUser(req_data)
         if reply_data:
-            return str(reply_data)
+            return '返回值->'+str(reply_data)
         elif not reply_data:
-            return '数据库错误导致动作失败!'
+            return '数据库错误导致操作失败!'
 
 
 if __name__ == '__main__':
