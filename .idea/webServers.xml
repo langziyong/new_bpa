@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="9317f606-8b1c-4c4b-88c2-84288dee5051" name="new_bpa" url="http://bpa.aiyanlin.cn">
+        <fileTransfer accessType="SFTP" host="114.55.140.138" port="22" sshConfigId="e0f31fa5-536c-4807-a2f6-78db49a2c3f2" sshConfig="root@114.55.140.138:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

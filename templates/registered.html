@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>注册</h1>
+    {{ tips|safe }}
     <form action = "./registered" method = "post">
         <p><label>
             学号:<input type="text" name="xh"/>
@@ -32,10 +33,14 @@
             详细地址:<input type="text" name="xxdz"/>
         </label></p>
         <p><label>
-            体温参数1:<input type="text" name="tw1"/>
+            体温参数1:<input type="radio" name="tw1" value="1"/>小于37°C
+                     <input type="radio" name="tw1" value="2"/>37°C至37°C
+                     <input type="radio" name="tw1" value="3"/>大于37°C
         </label></p>
         <p><label>
-            体温参数2:<input type="text" name="tw2"/>
+            体温参数1:<input type="radio" name="tw2" value="1"/>小于37°C
+                     <input type="radio" name="tw2" value="2"/>37°C至37°C
+                     <input type="radio" name="tw2" value="3"/>大于37°C
         </label></p>
         <p><label>
             电子邮箱:<input type="text" name="email"/>

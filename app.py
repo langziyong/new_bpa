@@ -31,10 +31,14 @@ def registerdePage():
     if request.method == 'GET':
         return render_template('registered.html')
     elif request.method == 'POST':
-        req_data = request.form
+        req_data = request.form.to_dict()
+        if len(flask_mysql.getUser(req_data['xh'])) != 0:
+            return render_template('registered.html',
+                                   tips = '<h3 style="color: red">错误：数据库内已有此学号数据</h3>'
+                                          '<a href="/">您可以直接点击此链接回到主页</a>')
         reply_data = flask_mysql.addUser(req_data)
         if reply_data:
-            return str(reply_data)
+            return redirect('/user?xh=%s&command=show_newuser' % req_data['xh'])
         elif not reply_data:
             return '数据库错误导致操作失败!'
 
@@ -43,13 +47,17 @@ def registerdePage():
 def userPage():
     if request.method == 'GET':
         userdata = flask_mysql.getUser(request.args.get('xh'))[0]
+        if request.args.get('command', '') == 'show_newuser':
+            tips = '<h3 style="color: green">注册成功！以下是您的数据</h3>'
+        else:
+            tips = ''
         return eval("render_template('user.html',id = '%s',disabled = 'disabled',"
                     "xh = '%s',mm = '%s',xm = '%s',xy = '%s',sjhm = '%s',dz1 = '%s',"
                     "dz2 = '%s',xxdz = '%s',checked1_%s = 'checked',checked2_%s = 'checked',"
-                    "email = '%s')"
+                    "email = '%s',tips = '%s')"
                     % (userdata[0], userdata[1], userdata[2], userdata[3], userdata[4],
                        userdata[5], userdata[6], userdata[7], userdata[8], userdata[9],
-                       userdata[10], userdata[11]))
+                       userdata[10], userdata[11], tips))
 
 
 @app.route('/updateuserdata', methods = ['GET', 'POST'])
@@ -94,6 +102,7 @@ def test_bpa():
         except:
             reply_data = '执行失败'
         return reply_data
+
 
 if __name__ == '__main__':
     app.run()
