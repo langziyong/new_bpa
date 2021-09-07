@@ -8,6 +8,7 @@
     <h1>用户界面</h1>
     {{ tips|safe }}
     <p>您的唯一ID同时也是您的注册位次为：{{ id }}</p>
+    <p>当前账号状态为：{{ zt }}</p>
     <form action = "./test_bpa" method = "post">
         <p><label>
             学号:<input type="text" name="xh" value="{{ xh }}" {{ disabled }}/>
