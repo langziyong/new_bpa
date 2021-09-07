@@ -1,6 +1,9 @@
+#!/usr/bin/python3
+# coding=utf-8
+
 import requests as req
 import json
-import execjs
+import auto_bpa
 
 
 def get_verify_code_tips(xh):
@@ -59,19 +62,8 @@ def send_verify_code(xh):
     return {'tips':tips, 'send_msg':q}
 
 
-def get_aes_passwd(t):  # AES 密码加密
-    try:  # 打开 AES加密JS 文件
-        with open("./aes.js", 'r', encoding = 'utf-8') as f:  # 打开JS文件
-            aesjs = f.read()
-            print("AES加密JS读取成功！")
-    except:
-        print("AES加密JS读取失败！")
-    aes = execjs.compile(aesjs)  # 加载JS文件
-    return aes.call('Encrypt', str(t))  # 调用js方法  第一个参数是JS的方法名，后面的data和key是js方法的参数
-
-
 def reset_password(xh, verify, new_password):
-    new_password = get_aes_passwd(new_password)
+    new_password = auto_bpa.get_aes_passwd(new_password)
     url = 'https://newca.zjtongji.edu.cn/ng//out/security/changePwd'
     headers = {
         'Host':'newca.zjtongji.edu.cn',
@@ -90,10 +82,10 @@ def reset_password(xh, verify, new_password):
         'Accept-Encoding':'gzip, deflate, br',
         'Accept-Language':'zh-CN,zh-TW;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6,zh-HK;q=0.5',
     }
-    data = '{"username":"%s","validcode":"%s","password":"%s"}' % (xh,verify,new_password)
+    data = '{"username":"%s","validcode":"%s","password":"%s"}' % (xh, verify, new_password)
     print(data)
     try:
-        r = req.post(url = url, headers = headers,data = data)
+        r = req.post(url = url, headers = headers, data = data)
     except:
         return '修改请求失败'
     q = json.loads(r.text)

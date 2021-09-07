@@ -48,7 +48,10 @@
             电子邮箱:<input type="text" name="email" value="{{ email }}" {{ disabled }}/>
         </label></p>
         <p style="color:black"><b>提示：</b>您可以点击下面的按钮测试，服务器会执行一次报平安操作并向您的邮箱发送告知邮件。</p>
-        <p><a href="./test_bpa?xh={{ xh }}"><input type = "button" value = "测试一次！"   style="color: black"/></a></p>
+        <form action = "./test_bpa" method = "post">
+                <input type = "text" name = "xh" value="{{ xh }}" hidden/>
+                <input type = "submit" value = "测试一次!" />
+        </form>
         <p style="color: red"><b>警告：</b>如非必要！比如密码修改，信息失效，或者其他自动化失效情况下，请勿随意更改信息。</p>
         <p><a href="./updateuserdata?xh={{ xh }}"><input type = "button" value = "我确实需要更新！" style="color: red"/></a></p>
     </form>

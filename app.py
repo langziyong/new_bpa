@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# coding=utf-8
+
 from flask import Flask, render_template, request, redirect
 import flask_mysql
 import auto_bpa
@@ -50,10 +53,16 @@ def registerdePage():
 def userPage():
     if request.method == 'GET':
         userdata = flask_mysql.getUser(request.args.get('xh'))[0]
+        if userdata[12] == 1:
+            zt = '未验证'
+        elif userdata[12] == 2:
+            zt = '验证失败，请重新填写'
+        elif userdata[12] == 0:
+            zt = '验证通过，数据有效'
+        else:
+            zt = userdata[12]
         if request.args.get('command', '') == 'show_newuser':
             tips = '<h3 style="color: green">注册成功！以下是您的数据</h3>'
-            if userdata[12] == 1:
-                zt = ''
         else:
             tips = ''
         return eval("render_template('user.html',id = '%s',disabled = 'disabled',"
@@ -62,7 +71,7 @@ def userPage():
                     "email = '%s',tips = '%s',zt = '%s')"
                     % (userdata[0], userdata[1], userdata[2], userdata[3], userdata[4],
                        userdata[5], userdata[6], userdata[7], userdata[8], userdata[9],
-                       userdata[10], userdata[11], zt, tips))
+                       userdata[10], userdata[11], tips, zt))
 
 
 @app.route('/updateuserdata', methods = ['GET', 'POST'])
@@ -85,25 +94,15 @@ def updateUserdata():
             return '数据库错误导致操作失败!'
 
 
-@app.route('/test_bpa', methods = ['GET', 'POST'])
+@app.route('/test_bpa', methods = ['POST'])
 def test_bpa():
-    if request.method == 'GET':
-        xh = request.args.get('xh')
-        all_user_data = flask_mysql.getUser(xh)
-        print(all_user_data)
+    if request.method == 'POST':
+        xh = request.form.get('xh', '')
+        user = list(flask_mysql.getUser(xh)[0])
+        print(user)
         try:
-            auto = auto_bpa.MainControl(all_user_data)
-            del auto
+            auto_bpa.bpa(user)
             reply_data = '执行成功'
-        except:
-            reply_data = '执行失败'
-        return reply_data
-    elif request.method == 'POST':
-        all_user_data = (request.form.to_dict(),)
-        try:
-            auto = auto_bpa.MainControl(all_user_data)
-            reply_data = '执行成功'
-            del auto
         except:
             reply_data = '执行失败'
         return reply_data
