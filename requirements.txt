@@ -2,3 +2,4 @@ PyExecJS==1.5.1
 requests==2.25.0
 Flask~=2.0.1
 PyMySQL~=1.0.2
+beautifulsoup4~=4.10.0

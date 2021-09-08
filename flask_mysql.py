@@ -1,7 +1,7 @@
 import pymysql
 
 
-# 20210831
+# 20210907
 
 # updateuserdata = 用户数据字典
 def addUser(updateuserdata):
@@ -43,7 +43,7 @@ def getUser(xh):
     )
     cursor = db.cursor()
     sql = '''
-    SELECT * From user_data WHERE xh = '%s';''' % xh
+    SELECT * FROM user_data WHERE xh = '%s';''' % xh
     try:
         cursor.execute(sql)
         reply_data = cursor.fetchall()
