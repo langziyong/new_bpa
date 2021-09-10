@@ -26,7 +26,7 @@ def main():  # 主程序 筛选 zt = 0 的用户
 
     all_user_data = reply_data
 
-    if len(all_user_data):
+    if len(all_user_data) == 0:
         print('无可执行对象')
     elif not reply_data:
         print('数据库查询失败')
