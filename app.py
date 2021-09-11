@@ -54,9 +54,9 @@ def userPage():
     if request.method == 'GET':
         userdata = flask_mysql.getUser(request.args.get('xh'))[0]
         if userdata[12] == 1:
-            zt = '未验证'
+            zt = '未验证，您可以点击下方验证数据进行验证'
         elif userdata[12] == 2:
-            zt = '验证失败，请重新填写'
+            zt = '验证失败，请更新数据后点击下方验证数据进行验证'
         elif userdata[12] == 0:
             zt = '验证通过，数据有效'
         else:
@@ -90,7 +90,8 @@ def updateUserdata():
         req_data = request.form.to_dict()
         reply_data = flask_mysql.updateUser(req_data)
         if reply_data:
-            return '更新成功!\n返回值->' + str(reply_data)
+            return '<p>更新成功!</p>' \
+                   '<a href="/">回到主页</a>'
         elif not reply_data:
             return '数据库错误导致操作失败!'
 
@@ -102,7 +103,7 @@ def test_bpa():
         user = list(flask_mysql.getUser(xh)[0])
         print(user)
         try:
-            auto_bpa.bpa(user)
+            auto_bpa.new_user_verify(user)
             reply_data = '执行成功'
         except:
             reply_data = '执行失败'

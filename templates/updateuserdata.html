@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
     <meta charset="UTF-8">
     <title>众志成城 齐心抗疫</title>
 </head>
@@ -12,10 +12,10 @@
             学号:<input type="text" name="xh" value="{{ xh }}" {{ disabled }}/>
         </label></p>
         <p><label>
-            密码:<input type="text" name="xm" value="{{ mm }}" {{ disabled }}/>
+            密码:<input type="text" name="mm" value="{{ mm }}" {{ disabled }}/>
         </label></p>
         <p><label>
-            姓名:<input type="text" name="mm" value="{{ xm }}" {{ disabled }}/>
+            姓名:<input type="text" name="xm" value="{{ xm }}" {{ disabled }}/>
         </label></p>
         <p><label>
             学院:<input type="text" name="xy" value="{{ xy }}" {{ disabled }}/>
@@ -32,16 +32,36 @@
         <p><label>
             详细地址:<input type="text" name="xxdz" value="{{ xxdz }}" {{ disabled }}/>
         </label></p>
-        <p><label>
-            体温参数1:<input type="radio" name="tw1" value="1" {{ checked1_1 }} {{ disabled }}/>小于37°C
-                     <input type="radio" name="tw1" value="2" {{ checked1_2 }} {{ disabled }}/>37°C至37°C
-                     <input type="radio" name="tw1" value="3" {{ checked1_3 }} {{ disabled }}/>大于37°C
-        </label></p>
-        <p><label>
-            体温参数1:<input type="radio" name="tw2" value="1" {{ checked2_1 }} {{ disabled }}/>小于37°C
-                     <input type="radio" name="tw2" value="2" {{ checked2_2 }} {{ disabled }}/>37°C至37°C
-                     <input type="radio" name="tw2" value="3" {{ checked2_3 }} {{ disabled }}/>大于37°C
-        </label></p>
+        <p>
+            体温参数1:
+            <label>
+                <input type="radio" name="tw1" value="1"/>
+                小于37°C
+            </label>
+            <label>
+                <input type="radio" name="tw1" value="2"/>
+                37°C至37°C
+            </label>
+            <label>
+                <input type="radio" name="tw1" value="3"/>
+                大于37°C
+            </label>
+        </p>
+        <p>
+            体温参数1:
+            <label>
+                <input type="radio" name="tw2" value="1"/>
+                小于37°C
+            </label>
+            <label>
+                <input type="radio" name="tw2" value="2"/>
+                37°C至37°C
+            </label>
+            <label>
+                <input type="radio" name="tw2" value="3"/>
+                大于37°C
+            </label>
+        </p>
         <p><label>
             电子邮箱:<input type="text" name="email" value="{{ email }}" {{ disabled }}/>
         </label></p>

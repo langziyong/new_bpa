@@ -114,6 +114,9 @@ def login(user):
             log['result'] = '用户名或密码错误!'
             log['success'] = False
             return {'sessionid_cookie':sessionid_cookie, 'sessionid':sessionid, 'log':log}
+    except:
+        pass
+    try:
         if soup.find_all('div', attrs = {'style':"cursor:pointer;"})[0].attrs.get('onclick', '') == 'resetTo()':
             print('因为安全系统升级，您需要更改您的密码！')
             log['result'] = '因为安全系统升级，您需要更改您的密码！'
@@ -239,6 +242,7 @@ def bpa(user):
         jg = '成功'
         color = 'green'
     else:
+        flask_mysql.updateUser({'xh':user[1], 'zt':2})
         jg = '失败'
         color = 'red'
     html = f'''
@@ -246,13 +250,13 @@ def bpa(user):
                    <h1>报平安自动化日志邮件</h1>
                    <p style="color: black">邮件时间：{time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())}</p>
                    <p style="color: black">邮件类别：{mail_lx}</p>
-                   <p style="color: black">学号：{log.get('commit_log', {}).get('user', [])[1]}</p>
-                   <p style="color: black">姓名：{log.get('commit_log', {}).get('user', [])[3]}</p>
+                   <p style="color: black">学号：{log.get('login_log', {}).get('user', [])[1]}</p>
+                   <p style="color: black">姓名：{log.get('login_log', {}).get('user', [])[3]}</p>
                    <p style="color: {color}">Login：{log.get('login_log', {}).get('success', '')}</p>
                    <p style="color: black">Login_Result：{log.get('login_log', {}).get('result', '')}</p>
                    <p style="color: {color}">Commit：{log.get('commit_log', {}).get('success', '')}</p>
                    <p style="color: black">Commit_Result：{log.get('commit_log', {}).get('result', '')}</p>
-                   <p style="color: black">User_data：{log.get('commit_log', {}).get('user', [])}</p>
+                   <p style="color: black">User_data：{log.get('login_log', {}).get('user', [])}</p>
                    <p style="color: {color}">结果：{jg}</p>
 
                    <p style="color: black"><b>注意：</b>主程序会在每日13时自动对已经通过验证的账号进行提交操作，并发出此邮件。</p>
@@ -274,6 +278,7 @@ def new_user_verify(user):
         jg = '成功'
         color = 'green'
     else:
+        flask_mysql.updateUser({'xh':user[1], 'zt':2})
         jg = '失败'
         color = 'red'
     html = f'''
@@ -281,13 +286,13 @@ def new_user_verify(user):
                        <h1>新注册验证邮件</h1>
                        <p style="color: black">邮件时间：{time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())}</p>
                        <p style="color: black">邮件类别：{mail_lx}</p>
-                       <p style="color: black">学号：{log.get('commit_log', {}).get('user', [])[1]}</p>
-                       <p style="color: black">姓名：{log.get('commit_log', {}).get('user', [])[3]}</p>
+                       <p style="color: black">学号：{log.get('login_log', {}).get('user', [])[1]}</p>
+                       <p style="color: black">姓名：{log.get('login_log', {}).get('user', [])[3]}</p>
                        <p style="color: {color}">Login：{log.get('login_log', {}).get('success', '')}</p>
                        <p style="color: black">Login_Result：{log.get('login_log', {}).get('result', '')}</p>
                        <p style="color: {color}">Commit：{log.get('commit_log', {}).get('success', '')}</p>
                        <p style="color: black">Commit_Result：{log.get('commit_log', {}).get('result', '')}</p>
-                       <p style="color: black">User_data：{log.get('commit_log', {}).get('user', [])}</p>
+                       <p style="color: black">User_data：{log.get('login_log', {}).get('user', [])}</p>
                        <p style="color: {color}">结果：{jg}</p>
         
                        <p style="color: black"><b>注意：</b>此邮件为新注册用户的验证邮件，你需要关注以下几方面：</p>
