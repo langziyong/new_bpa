@@ -13,6 +13,8 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 import bs4
 
+import flask_mysql
+
 os.chdir(os.path.dirname(__file__))
 
 try:  # 打开 AES加密JS 文件
@@ -107,7 +109,7 @@ def login(user):
     # print(requests.text)
     soup = bs4.BeautifulSoup(requests.text, 'html.parser')
     try:
-        if soup.find_all('div',attrs = {'class':"errors"})[0].find('span').text == '用户名或密码错误!':
+        if soup.find_all('div', attrs = {'class':"errors"})[0].find('span').text == '用户名或密码错误!':
             print('用户名或密码错误!')
             log['result'] = '用户名或密码错误!'
             log['success'] = False
@@ -125,7 +127,7 @@ def login(user):
     sessionid = re.search(r'(?<=get sessionID\(\) {return \')\d+(?=\'})', requests.text).group()
 
     log['success'] = True
-    print(time.strftime("%H:%M:%S", time.localtime()) + "用户%s学号%s成功登录" % (user[3], user[1]))
+    print(time.strftime("%H:%M:%S", time.localtime()) + "用户%s学号%s成功登录!" % (user[3], user[1]))
     return {'sessionid_cookie':sessionid_cookie, 'sessionid':sessionid, 'log':log}
 
 
@@ -206,38 +208,16 @@ def commit(user, sessionid_cookie, sessionid):
     return log
 
 
-def send_mail(user, log):
+def send_email(user, t):
     my_sender = '2502164784@qq.com'  # 发件人邮箱账号
     my_pass = 'cmyscdshikxbdjgf'  # 发件人邮箱密码
     my_user = str(user[11])  # 收件人邮箱账号
     clock_time = time.strftime("%H:%M:%S", time.localtime())
-    mail_lx = '主程序'
-    if log.get('login_log', {}).get('success','') == True and log.get('commit_log', {}).get('success','') == True:
-        jg = '成功'
-    else:
-        jg = '失败'
     try:
-        html = f'''
-                <meta charset="UTF-8">
-                <h1>报平安自动化日志邮件</h1>
-                <p style="color: black">邮件时间：{time.strftime("%H:%M:%S", time.localtime())}</p>
-                <p style="color: black">邮件类别：{mail_lx}</p>
-                <p style="color: black">学号：{log.get('commit_log', {}).get('user',[])[1]}</p>
-                <p style="color: black">姓名：{log.get('commit_log', {}).get('user',[])[3]}</p>
-                <p style="color: black">Login：{log.get('login_log', {}).get('success','')}</p>
-                <p style="color: black">Login_Result：{log.get('login_log', {}).get('result','')}</p>
-                <p style="color: black">Commit：{log.get('commit_log', {}).get('success','')}</p>
-                <p style="color: black">Commit_Result：{log.get('commit_log', {}).get('result','')}</p>
-                <p style="color: black">User_data：{log.get('commit_log', {}).get('user',[])}</p>
-                <p style="color: black">结果：{jg}</p>
-
-                <p style="color: black"><b>注意：</b>主程序会在每日13时自动对已经通过验证的账号进行提交操作，并发出此邮件。</p>
-                <a style="color: black" href = 'http://bpa.aiyanlin.cn'>自动化主页地址->http://bpa.aiyanlin.cn</a>
-        '''
-        msg = MIMEText(html, 'html', 'utf-8')
+        msg = MIMEText(t, 'html', 'utf-8')
         msg['From'] = formataddr(("自动化服务器-主进程", my_sender))
         msg['To'] = formataddr((str(user[1]), my_user))
-        msg['Subject'] = time.strftime("%Y-%m-%d", time.localtime()) + "报平安自动化日志邮件"
+        msg['Subject'] = time.strftime("%Y-%m-%d", time.localtime()) + "报平安自动化通知邮件"
         server = smtplib.SMTP_SSL("smtp.qq.com", 465)  # 发件人邮箱中的SMTP服务器，端口是465
         server.login(my_sender, my_pass)
         server.sendmail(my_sender, [my_user, ], msg.as_string())
@@ -248,15 +228,75 @@ def send_mail(user, log):
 
 
 def bpa(user):
+    mail_lx = '主程序'
     log = {}
     q = login(user)
-    sessionid = q['sessionid']
-    sessionid_cookie = q['sessionid_cookie']
     log['login_log'] = q['log']
-    if not log['login_log']['success']:
-        send_mail(user, log)
-        return False
-    q = commit(user, sessionid_cookie, sessionid)
-    log['commit_log'] = q
+    if log['login_log']['success']:
+        q = commit(user, q['sessionid_cookie'], q['sessionid'])
+        log['commit_log'] = q
+    if log.get('login_log', {}).get('success', '') and log.get('commit_log', {}).get('success', ''):
+        jg = '成功'
+        color = 'green'
+    else:
+        jg = '失败'
+        color = 'red'
+    html = f'''
+                   <meta charset="UTF-8">
+                   <h1>报平安自动化日志邮件</h1>
+                   <p style="color: black">邮件时间：{time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())}</p>
+                   <p style="color: black">邮件类别：{mail_lx}</p>
+                   <p style="color: black">学号：{log.get('commit_log', {}).get('user', [])[1]}</p>
+                   <p style="color: black">姓名：{log.get('commit_log', {}).get('user', [])[3]}</p>
+                   <p style="color: {color}">Login：{log.get('login_log', {}).get('success', '')}</p>
+                   <p style="color: black">Login_Result：{log.get('login_log', {}).get('result', '')}</p>
+                   <p style="color: {color}">Commit：{log.get('commit_log', {}).get('success', '')}</p>
+                   <p style="color: black">Commit_Result：{log.get('commit_log', {}).get('result', '')}</p>
+                   <p style="color: black">User_data：{log.get('commit_log', {}).get('user', [])}</p>
+                   <p style="color: {color}">结果：{jg}</p>
 
-    send_mail(user, log)
+                   <p style="color: black"><b>注意：</b>主程序会在每日13时自动对已经通过验证的账号进行提交操作，并发出此邮件。</p>
+                   <a style="color: black" href = 'http://bpa.aiyanlin.cn'>自动化主页地址->http://bpa.aiyanlin.cn</a>
+           '''
+    send_email(user, html)
+
+
+def new_user_verify(user):
+    mail_lx = '新注册验证消息'
+    log = {}
+    q = login(user)
+    log['login_log'] = q['log']
+    if log['login_log']['success']:
+        q = commit(user, q['sessionid_cookie'], q['sessionid'])
+        log['commit_log'] = q
+    if log.get('login_log', {}).get('success', '') and log.get('commit_log', {}).get('success', ''):
+        flask_mysql.updateUser({'xh':user[1], 'zt':0})
+        jg = '成功'
+        color = 'green'
+    else:
+        jg = '失败'
+        color = 'red'
+    html = f'''
+                       <meta charset="UTF-8">
+                       <h1>新注册验证邮件</h1>
+                       <p style="color: black">邮件时间：{time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())}</p>
+                       <p style="color: black">邮件类别：{mail_lx}</p>
+                       <p style="color: black">学号：{log.get('commit_log', {}).get('user', [])[1]}</p>
+                       <p style="color: black">姓名：{log.get('commit_log', {}).get('user', [])[3]}</p>
+                       <p style="color: {color}">Login：{log.get('login_log', {}).get('success', '')}</p>
+                       <p style="color: black">Login_Result：{log.get('login_log', {}).get('result', '')}</p>
+                       <p style="color: {color}">Commit：{log.get('commit_log', {}).get('success', '')}</p>
+                       <p style="color: black">Commit_Result：{log.get('commit_log', {}).get('result', '')}</p>
+                       <p style="color: black">User_data：{log.get('commit_log', {}).get('user', [])}</p>
+                       <p style="color: {color}">结果：{jg}</p>
+        
+                       <p style="color: black"><b>注意：</b>此邮件为新注册用户的验证邮件，你需要关注以下几方面：</p>
+                       <p style="color: black">1.如果结果为<b style="color: green">成功</b>字样，表示您的信息完全符合要求，您无需进行其他操作，并且您的账号状态会刷新为<b style="color: green">验证通过</b>。</p>
+                       <p style="color: black">2.如果结果为<b style="color: red">失败</b>字样，表示您的信息填写有误。请继续参照下方。</p>
+                       <p style="color: black">3.Login 字段为<b style="color: red">False</b>表示账号登录失败，参照Login_Result 字段进行针对性改正并重新更新数据后即可再次尝试。</p>
+                       <p style="color: blue">如果提示因为安全系统升级，您需要更改您的密码！修改密码即可。</p>
+                       <a href='http://bpa.aiyanlin.cn/reset_password' ">学校的改密码界面太差劲了不适配手机，于是对页面进行了小小的改动，方便手机用户，点本链接就行</a>
+                       <p style="color: black">4.Commit 字段为<b style="color: red">False</b>表示登录成功但是数据提交失败，请检查登录数据是否符合模板。</p>
+                       <a style="color: black" href = 'http://bpa.aiyanlin.cn'>自动化主页地址->http://bpa.aiyanlin.cn</a>
+               '''
+    send_email(user, html)

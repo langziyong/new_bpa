@@ -5,8 +5,6 @@ from flask import Flask, render_template, request, redirect
 import flask_mysql
 import auto_bpa
 import reset_password as rp
-import json
-import requests
 
 app = Flask(__name__)
 
@@ -44,6 +42,8 @@ def registerdePage():
                                           '<a href="/">您可以直接点击此链接回到主页</a>')
         reply_data = flask_mysql.addUser(req_data)
         if reply_data:
+            user = ['', req_data['xh'], req_data['mm'], req_data['xm'], req_data['xy'], req_data['sjhm'], req_data['dz1'], req_data['dz2'], req_data['xxdz'], req_data['tw1'], req_data['tw2'], req_data['email']]
+            auto_bpa.new_user_verify(user)
             return redirect('/user?xh=%s&command=show_newuser' % req_data['xh'])
         elif not reply_data:
             return '数据库错误导致操作失败!'
@@ -62,7 +62,8 @@ def userPage():
         else:
             zt = userdata[12]
         if request.args.get('command', '') == 'show_newuser':
-            tips = '<h3 style="color: green">注册成功！以下是您的数据</h3>'
+            tips = '<h3 style="color: green">注册成功！以下是您的数据</h3>' \
+                   '<h3 style="color: green">另外我们向您的邮箱发送了验证邮件请注意查收。</h3>'
         else:
             tips = ''
         return eval("render_template('user.html',id = '%s',disabled = 'disabled',"

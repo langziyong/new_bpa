@@ -56,6 +56,7 @@ def getUser(xh):
 
 # new_data = 新的用户数据字典
 def updateUser(updateuserdata):
+    reply_data = None
     db = pymysql.connect(
         host = '114.55.140.138',
         user = 'root',
@@ -64,25 +65,23 @@ def updateUser(updateuserdata):
         port = 3306,
         charset = 'utf8')
     cursor = db.cursor()
-    cursor.execute('select count(1) from user_data')
-    print(updateuserdata)
-    id_number = cursor.fetchall()[0][0] + 1
-    sql = '''UPDATE  user_data
-             SET mm = '%s', xm = '%s', xy = '%s', sjhm = '%s', dz1 = '%s',dz2 = '%s', xxdz = '%s', tw1 = '%s', tw2 = '%s', email = '%s'
-             WHERE xh = '%s';
-             ''' % \
-          (updateuserdata['mm'], updateuserdata['xm'], updateuserdata['xy'],
-           updateuserdata['sjhm'], updateuserdata['dz1'], updateuserdata['dz2'],
-           updateuserdata['xxdz'], updateuserdata['tw1'], updateuserdata['tw2'],
-           updateuserdata['email'], updateuserdata['xh'])
-    print(sql)
-    try:
-        cursor.execute(sql)
-        db.commit()
-        reply_data = 'Update Success!'
-    except:
-        db.rollback()
-        reply_data = False
+    for i in updateuserdata:
+        if i == 'xh':
+            continue
+        sql = f'''UPDATE  user_data
+                  SET {i} = '{updateuserdata[i]}'
+                  WHERE xh = '{updateuserdata['xh']}';'''
+        try:
+            cursor.execute(sql)
+            db.commit()
+        except:
+            db.rollback()
+            reply_data = False
+            print("数据库数据更新失败。")
+            break
+        print(f"学号：{updateuserdata['xh']} 字段：{i} 更新为{updateuserdata[i]}")
+        reply_data = True
+
     cursor.close()
     db.close()
     return reply_data
