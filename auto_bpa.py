@@ -19,9 +19,10 @@ os.chdir(os.path.dirname(__file__))
 
 # 邮件配置读取
 conf = configparser.ConfigParser()
-conf.read('config', encoding = 'utf-8')
-email_sender = conf.read('email', 'sender')
-email_password = conf.read('email', 'password')
+with open('config',encoding = 'utf-8') as f:
+    conf.read_file(f)
+    email_sender = conf.get('email', 'sender')
+    email_password = conf.get('email', 'password')
 
 # 打开 AES加密JS 文件
 try:

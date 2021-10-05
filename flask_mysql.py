@@ -5,13 +5,14 @@ import configparser
 # 20211005
 # 数据库配置读取
 conf = configparser.ConfigParser()
-conf.read('config',encoding = 'utf-8')
-host = conf.get('db', 'host')
-user = conf.get('db', 'user')
-password = conf.get('db', 'password')
-database = conf.get('db', 'database')
-port = conf.get('db', 'port')
-
+with open('config',encoding = 'utf-8') as f:
+    conf.read_file(f)
+    host = conf.get('db', 'host')
+    user = conf.get('db', 'user')
+    password = conf.get('db', 'password')
+    database = conf.get('db', 'database')
+    port = int(conf.get('db', 'port'))
+    f.close()
 
 def get_db():
     db = pymysql.connect(
