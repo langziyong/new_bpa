@@ -1,15 +1,9 @@
 import auto_bpa
-import pymysql
+import flask_mysql
 
 
 def main():  # 主程序 筛选 zt = 0 的用户
-    db = pymysql.connect(
-        host = '114.55.140.138',
-        user = 'root',
-        password = "lzy0812..",
-        database = 'bpa_user_data',
-        port = 3306,
-        charset = 'utf8')
+    db = flask_mysql.get_db()
     cursor = db.cursor()
     sql = '''
     SELECT * 

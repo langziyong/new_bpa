@@ -90,7 +90,3 @@ def reset_password(xh, verify, new_password):
         return '修改请求失败'
     q = json.loads(r.text)
     return q
-
-# get_verify_code_tips('1701070235')
-# send_verify_code('1701070235')
-# reset_password('17010235', 'Lzy0812..')

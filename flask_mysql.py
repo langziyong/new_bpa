@@ -1,17 +1,32 @@
 import pymysql
-
+import configparser
 
 # 20210907
+# 20211005
+# 数据库配置读取
+conf = configparser.ConfigParser()
+conf.read('config',encoding = 'utf-8')
+host = conf.get('db', 'host')
+user = conf.get('db', 'user')
+password = conf.get('db', 'password')
+database = conf.get('db', 'database')
+port = conf.get('db', 'port')
+
+
+def get_db():
+    db = pymysql.connect(
+        host = host,
+        user = user,
+        password = password,
+        database = database,
+        port = port,
+        charset = 'utf8')
+    return db
+
 
 # updateuserdata = 用户数据字典
 def addUser(updateuserdata):
-    db = pymysql.connect(
-        host = '114.55.140.138',
-        user = 'root',
-        password = "lzy0812..",
-        database = 'bpa_user_data',
-        port = 3306,
-        charset = 'utf8')
+    db = get_db()
     cursor = db.cursor()
     sql = '''INSERT INTO user_data(xh, mm, xm, xy, sjhm, dz1, dz2, xxdz, tw1, tw2, email) 
              VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');
@@ -33,14 +48,7 @@ def addUser(updateuserdata):
 
 # xh = 学号
 def getUser(xh):
-    db = pymysql.connect(
-        host = '114.55.140.138',
-        user = 'root',
-        password = "lzy0812..",
-        database = 'bpa_user_data',
-        charset = 'utf8',
-        port = 3306
-    )
+    db = get_db()
     cursor = db.cursor()
     sql = '''
     SELECT * FROM user_data WHERE xh = '%s';''' % xh
@@ -57,13 +65,7 @@ def getUser(xh):
 # new_data = 新的用户数据字典
 def updateUser(updateuserdata):
     reply_data = None
-    db = pymysql.connect(
-        host = '114.55.140.138',
-        user = 'root',
-        password = "lzy0812..",
-        database = 'bpa_user_data',
-        port = 3306,
-        charset = 'utf8')
+    db = get_db()
     cursor = db.cursor()
     for i in updateuserdata:
         if i == 'xh':

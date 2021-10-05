@@ -12,24 +12,31 @@ import datetime
 from email.mime.text import MIMEText
 from email.utils import formataddr
 import bs4
-
+import configparser
 import flask_mysql
 
 os.chdir(os.path.dirname(__file__))
 
-try:  # 打开 AES加密JS 文件
+# 邮件配置读取
+conf = configparser.ConfigParser()
+conf.read('config', encoding = 'utf-8')
+email_sender = conf.read('email', 'sender')
+email_password = conf.read('email', 'password')
+
+# 打开 AES加密JS 文件
+try:
     with open("./aes.js", 'r', encoding = 'utf-8') as f:  # 打开JS文件
         aesjs = f.read()
         print("AES加密JS读取成功！")
 except:
     print("AES加密JS读取失败！")
 
-
+# 定义加密函数
 def get_aes_passwd(t):  # AES 密码加密
     aes = execjs.compile(aesjs)  # 加载JS文件
     return aes.call('Encrypt', str(t))  # 调用js方法  第一个参数是JS的方法名，后面的data和key是js方法的参数
 
-
+# 定义转中文函数
 def get_chinese(t):
     a = t
     t = ''
@@ -212,8 +219,8 @@ def commit(user, sessionid_cookie, sessionid):
 
 
 def send_email(user, t):
-    my_sender = '2502164784@qq.com'  # 发件人邮箱账号
-    my_pass = 'cmyscdshikxbdjgf'  # 发件人邮箱密码
+    my_sender = email_sender  # 发件人邮箱账号
+    my_pass = email_password  # 发件人邮箱密码
     my_user = str(user[11])  # 收件人邮箱账号
     clock_time = time.strftime("%H:%M:%S", time.localtime())
     try:
