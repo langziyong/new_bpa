@@ -1,6 +1,8 @@
 import pymysql
 import configparser
-
+import os
+# 更改运行路径
+os.chdir(os.path.dirname(__file__))
 # 20210907
 # 20211005
 # 数据库配置读取
