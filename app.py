@@ -1,115 +1,151 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-from flask import Flask, render_template, request, redirect
-import flask_mysql
+from flask import Flask, render_template, request, redirect, jsonify, make_response
+
 import auto_bpa
+import flask_mysql
 import reset_password as rp
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 
-@app.route('/')
-def index():  # put application's code here
-    return render_template('index.html')
+# reply_data = {
+#     'sataus': True or False 请求是否按照理想情况运行。理想情况是非定义的。
+#     'data': dict 在请求成功的情况下，返回数据或者状态。
+#     'error': 仅在 'status' 值为 False 时存在，包含了错误信息。
+# }
 
+# API
+@app.route('/api/bpa_login', methods = ['POST'])
+def bpa_login():
+    reply_data = {
+        'status': None,
+        'data': {},
+    }
+    print("收到表单数据：%s" % request.form)
 
-@app.route('/search', methods = ['POST'])
-def search():
     xh = request.form.get('xh')
-    reply_data = flask_mysql.getUser(xh)
-    if reply_data or reply_data == ():
-        if len(reply_data) == 0:
-            return render_template('index.html',
-                                   cxjg = '<a href = "./registered">用户不存在，点击此链接进行注册。</a>',
-                                   )
+    passwd = request.form.get('passwd')
+
+    getuser = flask_mysql.getUser(xh)
+
+    reply_data = auto_bpa.login(xh, passwd)
+
+    if getuser['status'] and reply_data['status']:
+        if getuser['data']['user'] is None:
+            reply_data['register'] = False
         else:
-            return render_template('index.html',
-                                   cxjg = '<a href = "./user?xh=%s">学号%s已找到,点击此链接进行管理。</a>' % (reply_data[0][1], reply_data[0][1]))
-    elif not reply_data:
-        return '数据库错误导致操作失败!'
+            reply_data['register'] = True
+    else:
+        reply_data['status'] = False
+        reply_data['error'] = "登录失败 查询:%s  登录:%s" % (getuser['status'], reply_data['status'])
+
+    print(reply_data)
+
+    response = make_response(jsonify(reply_data), 200)
+    response.headers['Access-Control-Allow-Origin'] = "*"
+    response.headers['Access-Control-Allow-Methods'] = "POST"
+    return response
 
 
-@app.route('/registered', methods = ['POST', 'GET'])
-def registerdePage():
-    if request.method == 'GET':
-        return render_template('registered.html')
-    elif request.method == 'POST':
-        req_data = request.form.to_dict()
-        if len(flask_mysql.getUser(req_data['xh'])) != 0:
-            return render_template('registered.html',
-                                   tips = '<h3 style="color: red">错误：数据库内已有此学号数据</h3>'
-                                          '<a href="/">您可以直接点击此链接回到主页</a>')
-        reply_data = flask_mysql.addUser(req_data)
-        if reply_data:
-            user = ['', req_data['xh'], req_data['mm'], req_data['xm'], req_data['xy'], req_data['sjhm'], req_data['dz1'], req_data['dz2'], req_data['xxdz'], req_data['tw1'], req_data['tw2'], req_data['email']]
-            auto_bpa.new_user_verify(user)
-            return redirect('/user?xh=%s&command=show_newuser' % req_data['xh'])
-        elif not reply_data:
-            return '数据库错误导致操作失败!'
+@app.route("/api/bpa_adduser", methods = ['POST'])
+def bpa_adduser():
+    reply_data = {
+        'status': None,
+        'data': {},
+    }
+    print("收到表单数据：%s" % request.form)
+    try:
+        # 转换为字典格式的用户数据
+        new_user = request.form.to_dict()
+        for i in new_user:
+            if new_user[i] == '':
+                reply_data['status'] = False
+                reply_data['error'] = "提交注册请求失败。error：存在空值。"
+
+                response = make_response(jsonify(reply_data), 200)
+                response.headers['Access-Control-Allow-Origin'] = "*"
+                response.headers['Access-Control-Allow-Methods'] = "POST"
+                return response
+
+        # 提交验证
+        reply_data = auto_bpa.new_user_verify(new_user)
+    except Exception as e:
+        reply_data['status'] = False
+        reply_data['error'] = "提交注册请求失败。error：" + str(e)
+        print(reply_data)
+
+        response = make_response(jsonify(reply_data), 200)
+        response.headers['Access-Control-Allow-Origin'] = "*"
+        response.headers['Access-Control-Allow-Methods'] = "POST"
+        return response
+    else:
+        print(reply_data)
+
+        response = make_response(jsonify(reply_data), 200)
+        response.headers['Access-Control-Allow-Origin'] = "*"
+        response.headers['Access-Control-Allow-Methods'] = "POST"
+        return response
 
 
-@app.route('/user', methods = ['GET', 'POST'])
-def userPage():
-    if request.method == 'GET':
-        userdata = flask_mysql.getUser(request.args.get('xh'))[0]
-        if userdata[12] == 1:
-            zt = '未验证，您可以点击下方验证数据进行验证'
-        elif userdata[12] == 2:
-            zt = '验证失败，请更新数据后点击下方验证数据进行验证'
-        elif userdata[12] == 0:
-            zt = '验证通过，数据有效'
-        else:
-            zt = userdata[12]
-        if request.args.get('command', '') == 'show_newuser':
-            tips = '<h3 style="color: green">注册成功！以下是您的数据</h3>' \
-                   '<h3 style="color: green">另外我们向您的邮箱发送了验证邮件请注意查收。</h3>'
-        else:
-            tips = ''
-        return eval("render_template('user.html',id = '%s',disabled = 'disabled',"
-                    "xh = '%s',mm = '%s',xm = '%s',xy = '%s',sjhm = '%s',dz1 = '%s',"
-                    "dz2 = '%s',xxdz = '%s',checked1_%s = 'checked',checked2_%s = 'checked',"
-                    "email = '%s',tips = '%s',zt = '%s')"
-                    % (userdata[0], userdata[1], userdata[2], userdata[3], userdata[4],
-                       userdata[5], userdata[6], userdata[7], userdata[8], userdata[9],
-                       userdata[10], userdata[11], tips, zt))
+@app.route("/api/bpa_updateuser", methods = ['POST'])
+def bpa_updateuser():
+    pass
 
 
-@app.route('/updateuserdata', methods = ['GET', 'POST'])
-def updateUserdata():
-    if request.method == 'GET':
-        userdata = flask_mysql.getUser(request.args.get('xh'))[0]
-        return eval("render_template('updateuserdata.html',id = '%s',"
-                    "xh = '%s',mm = '%s',xm = '%s',xy = '%s',sjhm = '%s',dz1 = '%s',"
-                    "dz2 = '%s',xxdz = '%s',checked1_%s = 'checked',checked2_%s = 'checked',"
-                    "email = '%s')"
-                    % (userdata[0], userdata[1], userdata[2], userdata[3], userdata[4],
-                       userdata[5], userdata[6], userdata[7], userdata[8], userdata[9],
-                       userdata[10], userdata[11]))
-    elif request.method == 'POST':
-        req_data = request.form.to_dict()
-        reply_data = flask_mysql.updateUser(req_data)
-        if reply_data:
-            return '<p>更新成功!</p>' \
-                   '<a href="/">回到主页</a>'
-        elif not reply_data:
-            return '数据库错误导致操作失败!'
+@app.route("/api/bpa_deluser", methods = ['POST'])
+def bpa_deluser():
+    pass
 
 
-@app.route('/test_bpa', methods = ['POST'])
-def test_bpa():
-    if request.method == 'POST':
+@app.route("/api/bpa_testbpa", methods = ['POST'])
+def bpa_testbpa():
+    reply_data = {
+        'status': None,
+        'data': {}
+    }
+    print("收到表单数据：%s" % request.form)
+
+    try:
         xh = request.form.get('xh', '')
-        user = list(flask_mysql.getUser(xh)[0])
-        print(user)
-        try:
-            auto_bpa.new_user_verify(user)
-            reply_data = '执行成功'
-        except:
-            reply_data = '执行失败'
-        return reply_data
+        if xh == '':
+            reply_data['status'] = False
+            reply_data['error'] = '学号为空值'
+            response = make_response(jsonify(reply_data), 200)
+            response.headers['Access-Control-Allow-Origin'] = "*"
+            response.headers['Access-Control-Allow-Methods'] = "POST"
+            return response
+
+        print("学号：%s 开始尝试测试报平安" % xh)
+
+        get_user = flask_mysql.getUser(xh)
+
+        if get_user['status']:
+            user = get_user['data']['user']
+            reply_data = auto_bpa.bpa(user, 1)
+        else:
+            reply_data = get_user
+    except Exception as e:
+        reply_data = {
+            'status': False,
+            'data': {},
+            'error': '自动化系统错误。位于api_testbpa。error:' + str(type(e)) + str(e)
+        }
+        response = make_response(jsonify(reply_data), 200)
+        response.headers['Access-Control-Allow-Origin'] = "*"
+        response.headers['Access-Control-Allow-Methods'] = "POST"
+        return response
+    else:
+        response = make_response(jsonify(reply_data), 200)
+        response.headers['Access-Control-Allow-Origin'] = "*"
+        response.headers['Access-Control-Allow-Methods'] = "POST"
+        return response
 
 
+# ------------------ 旧的网页 --------------------------
+# 其他没用的已删除
 @app.route('/reset_password', methods = ['GET', 'POST'])
 def reset_password():
     if request.method == 'GET':

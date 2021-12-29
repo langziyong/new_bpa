@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 # coding=utf-8
 
-import requests as req
 import json
-import auto_bpa
+
+import requests as req
+
+from auto_bpa import get_aes_passwd
 
 
 def get_verify_code_tips(xh):
@@ -63,7 +65,7 @@ def send_verify_code(xh):
 
 
 def reset_password(xh, verify, new_password):
-    new_password = auto_bpa.get_aes_passwd(new_password)
+    new_password = get_aes_passwd(new_password)
     url = 'https://newca.zjtongji.edu.cn/ng//out/security/changePwd'
     headers = {
         'Host':'newca.zjtongji.edu.cn',
