@@ -27,8 +27,13 @@ def main():  # 主程序 筛选 zt = 0 的用户
 
     for user in all_user_data:
         user = list(user)
-        auto_bpa.bpa(user)
+
+        user_dict = flask_mysql.getUser(user[1])['data']['user']
+        print('---------------------------------------------')
+        print('用户：%s 姓名：%s 开始执行' % (user_dict['xh'],user_dict['xm']))
+        auto_bpa.bpa(user_dict, 0)
 
 
 if __name__ == '__main__':
     main()
+    print('------------------END------------------------')

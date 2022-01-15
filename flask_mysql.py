@@ -52,18 +52,22 @@ def addUser(userdata):
     except Exception as e:
         reply_data['status'] = False
         reply_data['error'] = "数据库添加新用户失败。error：" + str(e)
+        print("数据库添加新用户失败。error：" + str(e))
     else:
+        # 复查
         new_user = getUser(userdata['xh'])
-        if new_user['status'] and len(new_user['data']['user_data']) != 0:
+        if new_user['status'] and new_user['data']['user'] is not None:
             reply_data['status'] = True
-            reply_data['data']['new_user_id'] = new_user['data']['user_data'][0][0]
+            reply_data['data']['user'] = new_user['data']['user']
+            print("新用户添加成功")
         else:
             reply_data['status'] = False
             reply_data['error'] = "数据库添加新用户失败。error：已添加但测试查询不通过。"
+            print("数据库添加新用户失败。error：已添加但测试查询不通过。")
     try:
         cursor.close()
         db.close()
-    except:
+    except Exception as e:
         pass
     return reply_data
 
@@ -124,27 +128,84 @@ def getUser(xh):
 
 
 # new_data = 新的用户数据字典
-def updateUser(updateuserdata):
-    reply_data = None
-    db = get_db()
-    cursor = db.cursor()
-    for i in updateuserdata:
-        if i == 'xh':
-            continue
-        sql = f'''UPDATE  user_data
-                  SET {i} = '{updateuserdata[i]}'
-                  WHERE xh = '{updateuserdata['xh']}';'''
-        try:
+def updateUser(xh, new_data):
+    """
+    :param xh: 目标学号
+    :param new_data: 需要更新的数据字典
+    :return:
+    """
+    reply_data = {
+        'status': None,
+        'data': {}
+    }
+    complete_dict = {}
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        for i in new_data:
+            if i == 'xh':
+                continue
+            if new_data[i] == '' or new_data[i] is None:
+                continue
+            sql = f'''UPDATE user_data
+                      SET {i} = '{new_data[i]}'
+                      WHERE xh = '{xh}';'''
             cursor.execute(sql)
             db.commit()
-        except:
-            db.rollback()
-            reply_data = False
-            print("数据库数据更新失败。")
-            break
-        print(f"学号：{updateuserdata['xh']} 字段：{i} 更新为{updateuserdata[i]}")
-        reply_data = True
+            print(f"学号：{xh} 字段：{i} 更新为{new_data[i]}")
+            complete_dict[i] = new_data[i]
+    except Exception as e:
+        db.rollback()
+        reply_data = {
+            'status': False,
+            'error': '更新用户数据失败，数据库错误，error：' + str(type(e)) + str(e)
+        }
+    else:
+        reply_data = {
+            'status': True,
+            'data': {
+                'success': True,
+                'result': '用户数据已更新',
+                'user_xh': xh,
+                'updated': complete_dict
+            }
+        }
+    try:
+        cursor.close()
+        db.close()
+    except:
+        pass
 
-    cursor.close()
-    db.close()
+    return reply_data
+
+
+def delUser(xh):
+    reply_data = {
+        'status': None,
+        'data': {}
+    }
+    try:
+        db = get_db()
+        cursor = db.cursor()
+
+        sql = f"""DELETE FROM user_data
+                 WHERE xh = '{xh}';"""
+        if cursor.execute(sql) == 1:
+            reply_data = {
+                'status': True,
+                'data': {
+                    'success': True,
+                    'user_xh': xh,
+                    'result': '用户数据已删除'
+                }
+            }
+            db.commit()
+            print(f"用户学号：{xh} 数据已删除")
+    except Exception as e:
+        db.rollback()
+        reply_data = {
+            'status': False,
+            'error': '删除用户数据失败，数据库错误，error：' + str(type(e)) + str(e)
+        }
+
     return reply_data

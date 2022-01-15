@@ -56,15 +56,24 @@ def get_chinese(t):
 
 
 def login(xh, passwd):
-    mm = get_aes_passwd(passwd)
-    xh = xh
     reply_data = {
         'status': None,
         'data': {},
     }
+    if xh == '' or passwd == '' or xh is None or passwd is None:
+        print('用户名密码存在空值！')
+        reply_data['status'] = False
+        reply_data['error'] = '用户名密码存在空值！'
+        return reply_data
+    mm = get_aes_passwd(passwd)
+    xh = xh
 
     # 获取登录必要参数 lt execution
-    login_paper_url = 'https://newca.zjtongji.edu.cn/cas/login?service=https%3A%2F%2Fbdmobile.zjtongji.edu.cn%3A8081%2FReportServer%3Fformlet%3Dxxkj%2Fmobile%2Fbpa%2Fbpa.frm%26op%3Dh5'
+    # 旧版本的 已经过时了
+    # login_paper_url = 'https://newca.zjtongji.edu.cn/cas/login?service=https%3A%2F%2Fbdmobile.zjtongji.edu.cn%3A8081%2FReportServer%3Fformlet%3Dxxkj%2Fmobile%2Fbpa%2Fbpa.frm%26op%3Dh5'
+
+    # 2022/1/15 更新地址
+    login_paper_url = 'https://newca.zjtongji.edu.cn/cas/login?service=https%3A%2F%2Fbdmobile.zjtongji.edu.cn%3A8081%2FReportServer%3Fformlet%3Dxxkj%2Fmobile%2Fbpa%2Fbpa_loc.frm%26op%3Dh5'
     login_paper_headers = {
         'Host': 'newca.zjtongji.edu.cn',
         'Connection': 'keep-alive',
@@ -111,12 +120,6 @@ def login(xh, passwd):
         'Cookie': cookie_paper
     }
 
-    if xh == '' or mm == '' or xh is None or mm is None:
-        print('用户名密码存在空值！')
-        reply_data['status'] = False
-        reply_data['error'] = '用户名密码存在空值！'
-        return reply_data
-
     lt = urllib.parse.quote(lt, safe = '')
     execution = urllib.parse.quote(execution, safe = '')
     login_body = f'password={mm}&username={xh}&lt={lt}&execution={execution}&_eventId=submit'
@@ -148,14 +151,11 @@ def login(xh, passwd):
     except Exception as e:
         pass
 
-
     # 登录成功后
     cookie = re.search(r'JSESSIONID=\w+', requests.history[1].headers['Set-Cookie']).group()
     sessionid = re.search(r'(?<=get sessionID\(\) {return \')\d+(?=\'})', requests.text).group()
 
-
     details_data = get_user_details(sessionid, cookie)
-    reply_data['result'] = '登陆成功'
 
     if details_data['status']:
         reply_data['status'] = True
@@ -165,6 +165,7 @@ def login(xh, passwd):
         reply_data['data']['cookie'] = cookie
         reply_data['data']['sessionid'] = sessionid
         print(time.strftime("%H:%M:%S", time.localtime()) + "用户%s学号%s成功登录!" % (details_data['data']['details']['xm'], xh))
+        reply_data['result'] = '登陆成功'
         return reply_data
     else:
         reply_data['status'] = False
@@ -342,9 +343,9 @@ def bpa(user: dict, level: int):
 
     try_login = login(user['xh'], user['passwd'])
     if try_login['status']:
-        try_commit = commit(user,try_login['data']['cookie'],try_login['data']['sessionid'])
+        try_commit = commit(user, try_login['data']['cookie'], try_login['data']['sessionid'])
         if try_commit['status']:
-            flask_mysql.updateUser({'xh': user['xh'], 'zt': 0})
+            flask_mysql.updateUser(user['xh'], {'xh': user['xh'], 'zt': 0})
             jg = '成功'
             color = 'green'
             login_status = 'True'
@@ -359,7 +360,7 @@ def bpa(user: dict, level: int):
                 },
             }
         else:
-            flask_mysql.updateUser({'xh': user['xh'], 'zt': 2})
+            flask_mysql.updateUser(user['xh'], {'xh': user['xh'], 'zt': 2})
             jg = '失败'
             color = 'red'
             login_status = 'True'
@@ -374,7 +375,7 @@ def bpa(user: dict, level: int):
                 },
             }
     else:
-        flask_mysql.updateUser({'xh': user['xh'], 'zt': 2})
+        flask_mysql.updateUser(user['xh'], {'xh': user['xh'], 'zt': 2})
         jg = '失败'
         color = 'red'
         login_status = 'False'
@@ -412,6 +413,9 @@ def bpa(user: dict, level: int):
 
 def new_user_verify(user):
     __user = user
+    color = ''
+    jg = ''
+    wt = ''
     reply_data = {
         'status': None,
         'data': {},
@@ -429,36 +433,52 @@ def new_user_verify(user):
     if try_login['status']:
         try_commit = commit(user, try_login['data']['cookie'], try_login['data']['sessionid'])
         if try_commit['status']:
-            flask_mysql.addUser(user)
-            flask_mysql.updateUser({'xh': user['xh'], 'zt': 0})
-            jg = '恭喜，所有数据验证通过，您的账号将被纳入自动化计划！'
-            color = 'green'
-            wt = '无错误'
-            reply_data = {
-                'status': True,
-                'result': '注册成功',
-                'data': {
-                    'user': user,
-                    'result': jg,
-                    'success': True,
-                },
-            }
+            try_add = flask_mysql.addUser(user)
+            flask_mysql.updateUser(user['xh'], {'xh': user['xh'], 'zt': 0})
+            if try_add['status']:
+                jg = '恭喜，所有数据验证通过，您的账号将被纳入自动化计划！'
+                print(jg)
+                color = 'green'
+                wt = '无错误'
+                reply_data = {
+                    'status': True,
+                    'result': '注册成功',
+                    'data': {
+                        'new_user_id': try_add['data']['user']['id'],
+                        'result': jg,
+                        'success': True,
+                    },
+                }
+            else:
+                jg = '服务器添加用户失败！'
+                print(jg)
+                color = 'red'
+                wt = try_commit['error']
+                reply_data = {
+                    'status': False,
+                    'data': {
+                    },
+                    'error': '数据库添加失败。'
+                }
+                return reply_data
         else:
-            flask_mysql.addUser(user)
-            flask_mysql.updateUser({'xh': user['xh'], 'zt': 2})
-            jg = '服务器已收到您的数据并已记录，账号密码验证通过，但提交数据存在问题，您的账号将会保留，但不会纳入自动化计划。'
-            color = 'red'
-            wt = try_commit['error']
-            reply_data = {
-                'status': True,
-                'data': {
-                    'user': user,
-                    'result': jg,
-                    'success': False,
-                    'save': True,
-                    'error': try_commit['error']
-                },
-            }
+            try_add = flask_mysql.addUser(user)
+            flask_mysql.updateUser(user['xh'], {'xh': user['xh'], 'zt': 2})
+            if try_add['status']:
+                jg = '服务器已收到您的数据并已记录，账号密码验证通过，但提交数据存在问题，您的账号将会保留，但不会纳入自动化计划。'
+                print(jg)
+                color = 'red'
+                wt = try_commit['error']
+                reply_data = {
+                    'status': True,
+                    'data': {
+                        'new_user_id': try_add['data']['user']['id'],
+                        'result': jg,
+                        'success': False,
+                        'save': True,
+                        'error': try_commit['error']
+                    },
+                }
     else:
         jg = '服务器已收到您的数据，但是登陆失败，请检查学号或者密码并尝试重新注册，服务器拒绝保存此用户数据。'
         color = 'red'

@@ -38,9 +38,10 @@ def bpa_login():
             reply_data['register'] = False
         else:
             reply_data['register'] = True
+            reply_data['data']['user_data'] = getuser['data']['user']
     else:
         reply_data['status'] = False
-        reply_data['error'] = "登录失败 查询:%s  登录:%s" % (getuser['status'], reply_data['status'])
+        reply_data['error'] = "登录失败 查询:%s  登录:%s error：%s" % (getuser['status'], reply_data['status'], reply_data['error'])
 
     print(reply_data)
 
@@ -74,7 +75,7 @@ def bpa_adduser():
         reply_data = auto_bpa.new_user_verify(new_user)
     except Exception as e:
         reply_data['status'] = False
-        reply_data['error'] = "提交注册请求失败。error：" + str(e)
+        reply_data['error'] = "提交注册请求失败。error：" + str(type(e)) + str(e)
         print(reply_data)
 
         response = make_response(jsonify(reply_data), 200)
@@ -92,12 +93,87 @@ def bpa_adduser():
 
 @app.route("/api/bpa_updateuser", methods = ['POST'])
 def bpa_updateuser():
-    pass
+    reply_data = {
+        'status': None,
+        'data': {}
+    }
+    print("收到表单数据：%s" % request.form)
+
+    try:
+        new_data = request.form.to_dict()
+        if new_data.get('xh', '') == '':
+            reply_data = {
+                'status': False,
+                'error': '学号为空，必须包含学号参数。'
+            }
+            response = make_response(jsonify(reply_data), 200)
+            response.headers['Access-Control-Allow-Origin'] = "*"
+            response.headers['Access-Control-Allow-Methods'] = "POST"
+            return response
+
+        if len(new_data) <= 1 or len(new_data) > 11:
+            reply_data = {
+                'status': False,
+                'error': '参数过多或过少'
+            }
+            response = make_response(jsonify(reply_data), 200)
+            response.headers['Access-Control-Allow-Origin'] = "*"
+            response.headers['Access-Control-Allow-Methods'] = "POST"
+            return response
+
+        if flask_mysql.getUser(new_data['xh'])['data']['user'] is None:
+            reply_data = {
+                'status': False,
+                'error': '用户不存在'
+            }
+            response = make_response(jsonify(reply_data), 200)
+            response.headers['Access-Control-Allow-Origin'] = "*"
+            response.headers['Access-Control-Allow-Methods'] = "POST"
+            return response
+
+        reply_data = flask_mysql.updateUser(new_data['xh'], new_data)
+
+    except Exception as e:
+        reply_data = {
+            'status': False,
+            'error': '更新用户数据失败，系统错误' + str(type(e)) + str(e)
+        }
+
+    response = make_response(jsonify(reply_data), 200)
+    response.headers['Access-Control-Allow-Origin'] = "*"
+    response.headers['Access-Control-Allow-Methods'] = "POST"
+    return response
 
 
 @app.route("/api/bpa_deluser", methods = ['POST'])
 def bpa_deluser():
-    pass
+    reply_data = {
+        'status': None,
+        'data': {}
+    }
+    print("收到表单数据：%s" % request.form)
+    try:
+        if flask_mysql.getUser(request.form.get('xh'))['data']['user'] is None:
+            reply_data = {
+                'status': False,
+                'error': '用户不存在'
+            }
+            response = make_response(jsonify(reply_data), 200)
+            response.headers['Access-Control-Allow-Origin'] = "*"
+            response.headers['Access-Control-Allow-Methods'] = "POST"
+            return response
+
+        reply_data = flask_mysql.delUser(request.form.get('xh'))
+    except Exception as e:
+        reply_data = {
+            'status': False,
+            'error': '删除用户数据失败，系统错误，error：' + str(type(e)) + str(e)
+        }
+
+    response = make_response(jsonify(reply_data), 200)
+    response.headers['Access-Control-Allow-Origin'] = "*"
+    response.headers['Access-Control-Allow-Methods'] = "POST"
+    return response
 
 
 @app.route("/api/bpa_testbpa", methods = ['POST'])
